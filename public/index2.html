@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+    <meta charset="UTF-8">
+    <title>XSS 演示</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        .input-section {
+            margin-bottom: 20px;
+        }
+        .input-container {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 10px;
+        }
+        input {
+            width: 300px;
+            padding: 8px;
+        }
+        .button {
+            padding: 8px 16px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            color: white;
+        }
+        .reset-button {
+            background-color: #ff4444;
+        }
+        .example-button {
+            margin: 5px;
+            padding: 5px 10px;
+            background-color: #f0f0f0;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        .content-container {
+            display: flex;
+            gap: 20px;
+        }
+        .content-box {
+            flex: 1;
+            padding: 10px;
+        }
+        .unsafe-box {
+            border: 1px solid red;
+        }
+        .safe-box {
+            border: 1px solid green;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h2>XSS 演示</h2>
+        
+        <div class="input-section">
+            <div class="input-container">
+                <input type="text" id="xssInput" placeholder="请输入一些 HTML/JavaScript">
+                <button class="button reset-button" onclick="resetInput()">重置</button>
+            </div>
+            
+            <div id="examples">
+                <button class="example-button" onclick="setExample('</div><script>alert()</script><div>')">基础脚本警告</button>
+                <button class="example-button" onclick="setExample('<img src=\'x\' onerror=alert(\'XSS\')>')">图片 Onerror</button>
+                <button class="example-button" onclick="setExample('<div onclick=alert(\'clicked!\')>点击我</div>')">Onclick 事件</button>
+                <button class="example-button" onclick="setExample('<style>body { background: red; }</style>')">样式操作</button>
+                <button class="example-button" onclick="setExample('<a href=javascript:alert(\'XSS via link!\')>点击链接</a>')">JavaScript 链接</button>
+            </div>
+        </div>
+
+        <div class="content-container">
+            <div class="content-box">
+                <h3>不安全渲染 (容易受到 XSS 攻击):</h3>
+                <div id="unsafeOutput" class="unsafe-box"></div>
+            </div>
+
+            <div class="content-box">
+                <h3>安全渲染:</h3>
+                <div id="safeOutput" class="safe-box"></div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const input = document.getElementById('xssInput');
+        const unsafeOutput = document.getElementById('unsafeOutput');
+        const safeOutput = document.getElementById('safeOutput');
+
+        function updateContent() {
+            // 不安全的渲染（容易受到 XSS 攻击）
+            unsafeOutput.innerHTML = input.value;
+            
+            // 安全的渲染
+            safeOutput.textContent = input.value;
+        }
+
+        function setExample(example) {
+            input.value = example;
+            updateContent();
+        }
+
+        function resetInput() {
+            input.value = '';
+            updateContent();
+        }
+
+        input.addEventListener('input', updateContent);
+    </script>
+</body>
+</html>

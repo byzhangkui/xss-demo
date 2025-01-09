@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+    <meta charset="UTF-8">
+    <title>反射型 XSS 演示</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            padding: 20px;
+        }
+        .output-box {
+            border: 1px solid #ccc;
+            padding: 10px;
+            margin: 10px 0;
+        }
+        .unsafe {
+            background-color: #ffe6e6;
+        }
+        .safe {
+            background-color: #e6ffe6;
+        }
+    </style>
+</head>
+<body>
+    <h1>反射型 XSS 演示</h1>
+    
+    <div>
+        <h3>不安全的输出：</h3>
+        <div id="unsafeOutput" class="output-box unsafe"></div>
+        
+        <h3>安全的输出：</h3>
+        <div id="safeOutput" class="output-box safe"></div>
+    </div>
+
+    <div style="margin-top: 20px;">
+        <h3>测试链接：</h3>
+        <ul>
+            <li><a href="?input=Hello World">普通文本</a></li>
+            <li><a href="?input=<script>alert('XSS!')</script>">基础 XSS</a></li>
+            <li><a href="?input=<img src='x' onerror=alert('XSS')>">图片 Onerror XSS</a></li>
+        </ul>
+    </div>
+
+    <script>
+        function getQueryParam(param) {
+            const urlParams = new URLSearchParams(window.location.search);
+            return urlParams.get(param);
+        }
+
+        const input = getQueryParam('input');
+        if (input) {
+            // 不安全的方式：直接输出到 innerHTML
+            document.getElementById('unsafeOutput').innerHTML = input;
+            
+            // 安全的方式：使用 textContent
+            document.getElementById('safeOutput').textContent = input;
+        }
+    </script>
+</body>
+</html> 

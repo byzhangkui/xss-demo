@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+    <meta charset="UTF-8">
+    <title>DOM XSS 演示</title>
+    <style>
+        .demo-box {
+            border: 1px solid #ccc;
+            margin: 20px;
+            padding: 15px;
+        }
+        .vulnerable {
+            background-color: #ffe6e6;
+        }
+        .safe {
+            background-color: #e6ffe6;
+        }
+    </style>
+</head>
+<body>
+    <h1>DOM XSS 演示</h1>
+
+    <!-- 案例1: location.hash -->
+    <div class="demo-box vulnerable">
+        <h3>案例1: location.hash</h3>
+        <p>不安全的 hash 处理:</p>
+        <div id="hashOutput"></div>
+        <script>
+            // 不安全: 直接使用 location.hash
+            if(location.hash) {
+                document.getElementById('hashOutput').innerHTML = 
+                    decodeURIComponent(location.hash.slice(1));
+            }
+        </script>
+        <p>测试链接: <a href="#<img src=x onerror=alert('DOM XSS 1')>">点击测试</a></p>
+    </div>
+
+    <!-- 案例2: document.write -->
+    <div class="demo-box vulnerable">
+        <h3>案例2: document.write</h3>
+        <script>
+            // 不安全: 使用 document.write 输出 URL 参数
+            const params = new URLSearchParams(window.location.search);
+            const name = params.get('name');
+            if(name) {
+                document.write("欢迎, " + name + "!");
+            }
+        </script>
+        <p>测试链接: <a href="?name=<script>alert('DOM XSS 2')</script>">点击测试</a></p>
+    </div>
+
+    <!-- 案例3: innerHTML -->
+    <div class="demo-box vulnerable">
+        <h3>案例3: innerHTML 和 eval</h3>
+        <input type="text" id="searchInput" placeholder="搜索...">
+        <button onclick="search()">搜索</button>
+        <div id="searchResults"></div>
+        <script>
+            // 不安全: 使用 innerHTML 显示搜索结果
+            function search() {
+                const query = document.getElementById('searchInput').value;
+                document.getElementById('searchResults').innerHTML = 
+                    "搜索结果: " + query;
+            }
+        </script>
+    </div>
+
+    <!-- 案例4: jQuery -->
+    <div class="demo-box vulnerable">
+        <h3>案例4: jQuery HTML 方法</h3>
+        <div id="jqueryDemo"></div>
+        <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+        <script>
+            // 不安全: 使用 jQuery 的 html() 方法
+            const content = new URLSearchParams(location.search).get('content');
+            if(content) {
+                $('#jqueryDemo').html(content);
+            }
+        </script>
+    </div>
+
+    <!-- 安全的实现示例 -->
+    <div class="demo-box safe">
+        <h3>安全实现示例</h3>
+        <input type="text" id="safeInput" placeholder="输入内容...">
+        <button onclick="displaySafe()">安全显示</button>
+        <div id="safeOutput"></div>
+        <script>
+            function displaySafe() {
+                const input = document.getElementById('safeInput').value;
+                // 安全: 使用 textContent
+                document.getElementById('safeOutput').textContent = input;
+            }
+        </script>
+    </div>
+
+    <div class="demo-box">
+        <h3>防御建议</h3>
+        <ul>
+            <li>使用 textContent 而不是 innerHTML</li>
+            <li>对 URL 参数进行适当的验证和转义</li>
+            <li>避免使用 document.write</li>
+            <li>不要使用 eval() 处理不可信数据</li>
+            <li>使用现代框架的安全特性</li>
+            <li>实施严格的 CSP 策略</li>
+        </ul>
+    </div>
+</body>
+</html> 
